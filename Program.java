@@ -1,86 +1,50 @@
-package polimorfismo;
+package ex.application;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Scanner;
 
-import entities.ImportedProduct;
-import entities.Product;
-import entities.UsedProduct;
+import ex.entities.Contract;
+import ex.entities.Instalment;
+import ex.services.ContractService;
+import ex.services.PaypalService;
 
 public class Program {
-	
-	public static void program() {
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-			
-			Locale.setDefault(Locale.US);
-			Scanner sc = new Scanner(System.in);
-			
-			List <Product> list = new ArrayList<>();
+
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		Locale.setDefault(Locale.US);
+
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		
-			System.out.print("Enter the number of products: ");
-			int n = sc.nextInt();
-			
-			for(int i=1;i<=n;i++) {
-				System.out.println("Product #" + i + " data:");
-				
-				System.out.print("Common, used or imported (c/u/i)? ");
-				char ch = sc.next().charAt(0);
-				
-				if(ch != 'c' && ch != 'u' && ch != 'i') {
-					System.out.println("Entrada inválida!");
-					program();
-				}
-				
-				sc.nextLine();
-				
-				System.out.print("Name: ");
-				String name = sc.nextLine();
-				
-				System.out.print("Price: ");
-				double price = sc.nextDouble();
-				
-				if(ch == 'c') {
-					Product p = new Product(name, price);
-					list.add(p);
-				}
-				else if(ch == 'i') {
-					System.out.print("Customs fee: ");
-					double customsFee = sc.nextDouble();
-					
-					Product p = new ImportedProduct(name, price, customsFee);
-					list.add(p);
-				}
-				else{
-					System.out.print("Manufacture date (DD/MM/YYYY): ");
-					Date manufactureDate = sdf.parse(sc.next());
-					
-					Product p = new UsedProduct(name, price, manufactureDate);
-					list.add(p);
-				}
-			}
-			
-			System.out.println();
-			
-			System.out.println("PRICE TAGS:");
-			for(Product p : list) {
-				System.out.println(p);
-			}
-			sc.close();
+		System.out.println("Entre com os dados do contrato: ");
+		
+		System.out.print("Número: ");
+		int number = sc.nextInt();
+		
+		System.out.print("Data (dd/MM/yyyy): ");
+		LocalDate date = LocalDate.parse(sc.next(), dtf);
+		
+		System.out.print("Valor do contrato: ");
+		double totalValue = sc.nextDouble();
+		
+		Contract c = new Contract(number, date, totalValue);
+		
+		System.out.print("Entre com o número de parcelas: ");
+		int n = sc.nextInt();
+		
+		ContractService cs = new ContractService(n, c, new PaypalService());
+		
+		cs.processContract();
+		
+		System.out.println("Parcelas:");
+		
+		for(Instalment i : c.getInstalments()) {
+			System.out.println(i);
 		}
-		catch(Exception e) {
-			System.out.println("Entrada inválida!");
-			program();
-		}
-			
+		
+		sc.close();
 	}
 
-	public static void main(String[] args) throws Exception{
-		
-		program();
-	}
 }
